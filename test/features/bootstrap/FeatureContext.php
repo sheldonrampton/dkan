@@ -470,4 +470,92 @@ class FeatureContext extends DrupalContext
       }
     }
   }
+
+
+  /**
+   * Check that the breadcrumb exists.
+   *
+   * @Then /^I (?:should )?see the breadcrumb "([^"]*)"$/
+   *
+   * @param string $breadcrumb
+   *   Breadcrumb text to look for.
+   */
+  public function iShouldSeeTheBreadcrumb($breadcrumb) {
+    $page_element = $this->getSession()->getPage();
+    if (!$page_element) {
+      throw new Exception('Page not found.');
+    }
+    $breadcrumb_element = $page_element->find('xpath', "//ul[@class='breadcrumb']");
+    if (!$breadcrumb_element) {
+      throw new Exception('No breadcrumb found on the page.');
+    }
+
+    $search = explode(" > ", $breadcrumb);
+    $found = $page_element->findAll('css', "ul.breadcrumb li");
+    for($i = 0; $i < count($found); $i++) {
+      if (!isset($search[$i])) {
+        $actual = $this->_buildBreadcrumb($found);
+        throw new Exception('The breadcrumb found in the page is "' . implode($actual, ' > ') . '" which contains ' . (count($actual) - count($search)) . ' more items than specified.');
+      }
+      //  Then I should see the breadcrumb "Home (linked to /) > Add content (linked to /node/add) > Add dataset"
+      $search_text = $search[$i];
+      $search_link = NULL;
+      if(preg_match('@(.+) \(linked to (.+)\)@i', $search[$i], $matches)) {
+        $search_text = $matches[1];
+        $search_link = $matches[2];
+      }
+
+      // First check text
+      if ($found[$i]->getText() != $search_text) {
+        throw new Exception('The breadcrumb in the page "' . $found[$i]->getText() . '" did not match the specified text "' . $search_text . '".');
+      }
+
+      // Then compare links
+      $a = $found[$i]->find('css', 'a');
+      if (count($a)) {
+        if($search_link == NULL) {
+          throw new Exception('The breadcrumb in the page links to "' . $a->getAttribute('href') . '" when it should not have a link.');
+        }
+        if ($search_link != NULL && $a->getAttribute('href') !== $search_link) {
+          throw new Exception('The breadcrumb in the page "' . $found[$i]->getText() . '" did not have the specified link "' . $search_link . '".');
+        }
+      }
+      else {
+        if ($search_link != NULL) {
+          throw new Exception('The breadcrumb in the page "' . $found[$i]->getText() . '" did not have any link when it should have been "' . $search_link . '".');
+        }
+      }
+    }
+
+    if(count($found) < count($search)) {
+      $actual = $this->_buildBreadcrumb($found);
+      throw new Exception('The breadcrumb found in the page is "' . implode($actual, ' > ') . '" which contains ' . (count($search) - count($actual)) . ' less items than specified.');
+    }
+
+  }
+
+  private function _buildBreadCrumb($found) {
+    $breadcrumb = array();
+    foreach ($found as $found_element) {
+      $breadcrumb[] = $found_element->getText();
+    }
+    return $breadcrumb;
+  }
+
+  /**
+   * Check that a breadcrumb does not exist.
+   *
+   * @Then /^I should not see any breadcrumb$/
+   *
+   */
+  public function iShouldNotSeeAnyBreadcrumb() {
+    $page_element = $this->getSession()->getPage();
+    if (!$page_element) {
+      throw new Exception('Page not found.');
+    }
+    $breadcrumb_element = $page_element->find('xpath', "//ul[@class='breadcrumb']");
+    if ($breadcrumb_element) {
+      throw new Exception('A breadcrumb was found on the page.');
+    }
+  }
 }
