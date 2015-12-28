@@ -94,6 +94,8 @@ dependencies[] = visualization_entity
 dependencies[] = visualization_entity_charts
 dependencies[] = visualization_entity_embed
 dependencies[] = features_roles_permissions
+dependencies[] = wysiwyg_starter
+dependencies[] = wysiwyg_starter_formats
 
 ; Open data
 dependencies[] = entity_rdf

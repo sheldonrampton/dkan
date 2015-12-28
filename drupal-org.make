@@ -133,6 +133,8 @@ projects[admin_menu_source][subdir] = contrib
 projects[menu_token][version] = 1.0-beta5
 projects[menu_token][subdir] = contrib
 
+projects[wysiwyg_starter] = 1.0-beta1
+
 ; Deprecated
 projects[delta][version] = 3.0-beta11
 
